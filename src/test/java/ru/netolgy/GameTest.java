@@ -3,67 +3,80 @@ package ru.netolgy;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
-public class GameTest {
-    Players player1 = new Players(15, "Ivan", 350);
-    Players player2 = new Players(45, "Charly", 270);
-    Players player3 = new Players(22, "Volodka", 200);
-    Players player4 = new Players(45, "Misterio", 200);
+class GameTest {
+    Map<String, Players> players = new HashMap<>();
+    Game game = new Game();
+    Players player1 = new Players(1, "Fedor", 10);
+    Players player2 = new Players(2, "Olga", 8);
+    Players player3 = new Players(3, "Nick", 12);
+    Players player4 = new Players(4, "Travis", 10);
+
 
     @Test
-    public void shouldFindNotRegisteredPlayers() {
-        Game game = new Game();
+    void shouldRegisterNewPlayerAndFindForKeyInMap() {
+        players.put("Fedor", player1);
+        players.put("Olga", player2);
+        players.put("Nick", player3);
+        players.put("Travis", player4);
 
-        game.register(player1);
-        game.register(player2);
+        Players player5 = new Players(5, "Alisa", 11);
+        players.put("Alisa", player5);
 
-        Assertions.assertThrows(NotRegisteredException.class, () -> game.gameRound("David", "Ivan"));
-        Assertions.assertThrows(NotRegisteredException.class, () -> game.gameRound("Ivan", "David"));
+        Assertions.assertTrue(players.containsValue(player5));
+        Assertions.assertEquals(5, players.size());
+        Assertions.assertEquals(player5, players.get("Alisa"));
     }
 
     @Test
-    public void shouldRegisterAndFindAllPlayer() {
-        Game game = new Game();
-
+    public void roundPlayer1Wins() throws NotRegisteredException {
         game.register(player1);
-        game.register(player3);
         game.register(player2);
+
+        Assertions.assertEquals(1, game.gameRound("Fedor", "Olga"));
+    }
+
+    @Test
+    public void roundPlayer2Wins() throws NotRegisteredException {
+        game.register(player2);
+        game.register(player3);
+
+        Assertions.assertEquals(2, game.gameRound("Olga", "Nick"));
+    }
+
+    @Test
+    public void roundDraw() throws NotRegisteredException {
+        game.register(player1);
         game.register(player4);
 
-        Assertions.assertEquals(4, game.players.size());
-
-        List<Players> expected = List.of(player1, player3, player2, player4);
-        Assertions.assertEquals(expected, game.players);
+        Assertions.assertEquals(0, game.gameRound("Fedor", "Travis"));
     }
 
     @Test
-    public void shouldShowResultPlayer1Wins() throws NotRegisteredException {
-        Game game = new Game();
+    public void roundNotRegisteredPlayer() {
+        game.register(player1);
 
+        Assertions.assertThrows(NotRegisteredException.class, () -> game.gameRound("Fedor", "Alisa"));
+        Assertions.assertThrows(NotRegisteredException.class, () -> game.gameRound("Alisa", "Fedor"));
+    }
+
+    @Test
+    public void findNotRegisteredPlayer() {
+        game.register(player1);
+        Assertions.assertThrows(NotRegisteredException.class, () -> game.findRegisteredPlayer("Vasiliy"));
+    }
+
+    @Test
+    public void shouldFindRegisteredPlayerForKeys() throws NotRegisteredException {
         game.register(player1);
         game.register(player2);
-
-        Assertions.assertEquals(1, game.gameRound("Ivan", "Charly"));
-    }
-
-    @Test
-    public void shouldShowResultPlayer2Wins() throws NotRegisteredException {
-        Game game = new Game();
-
-        game.register(player1);
-        game.register(player2);
-
-        Assertions.assertEquals(2, game.gameRound("Charly", "Ivan"));
-    }
-
-    @Test
-    public void shouldResultGameRoundDraw() throws NotRegisteredException {
-        Game game = new Game();
-
         game.register(player3);
         game.register(player4);
-
-        Assertions.assertEquals(0, game.gameRound("Volodka", "Misterio"));
+        Assertions.assertEquals(player1, game.findRegisteredPlayer("Fedor"));
+        Assertions.assertEquals(player2, game.findRegisteredPlayer("Olga"));
+        Assertions.assertEquals(player3, game.findRegisteredPlayer("Nick"));
+        Assertions.assertEquals(player4, game.findRegisteredPlayer("Travis"));
     }
 }
