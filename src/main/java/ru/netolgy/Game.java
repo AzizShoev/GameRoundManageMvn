@@ -1,30 +1,26 @@
 package ru.netolgy;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Game {
-    public List<Players> players= new ArrayList<>();
+    Map<String, Players> players = new HashMap<>();
 
     public void register(Players player) {
-        players.add(player);
+        players.put(player.name, player);
     }
 
-    public Players findRegisteredPlayer(String name) {
-        for (Players player : players) {
-            if (player.name.equals(name)) {
-                return player;
-            }
+    Players findRegisteredPlayer(String playerName) throws NotRegisteredException {
+        Players player = players.get(playerName);
+        if (player == null) {
+            throw new NotRegisteredException("Player " + playerName + " not found");
         }
-        return null;
+        return player;
     }
-
     public int gameRound(String name1, String name2) throws NotRegisteredException {
         Players player1 = findRegisteredPlayer(name1);
         Players player2 = findRegisteredPlayer(name2);
-        if (player1 == null || player2 == null) {
-            throw new NotRegisteredException("Player name not found");
-        }
+
         if (player1.strength > player2.strength) {
             return 1;
         } else if (player1.strength < player2.strength) {
